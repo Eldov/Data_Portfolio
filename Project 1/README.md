@@ -1,29 +1,33 @@
-### **O Projeto 1** <br/> 
-Este "projeto", se é que posso chama-lo assim, tem uma proposta bem simples:
-Tendo em mãos uma pequena tabela, responder as mesmas 5 perguntas utilizando o que sei em diversas linguagens/programas.
+### **The Project 1** <br/> 
+This "project", if I can really call it this way, has a quite simple goal: </br>
+With a small table, answer the same 5 questions using what I know in different languages/tools
 
-### **Dados/Tabela** <br/>
-A Tabela contempla dados sobre 100 imóveis em lugar desconsiderado. Os atributos são:
-Imoveis, IPTU, Área - M², IPTU / M² e Classificação. As classificações são feitas de acordo com o valor de IPTU por M² onde:
-Classificações constam como "Nobre" - com valores da relação IPTU / M² maiores que R$38,00, "Média" - com valores entre R$25,00 e R$38,00 e "Popular" quando abaixo de R$25,00.
 
-### **Perguntas** <br/>
-As 5 perguntas que propus responder das mais variadas formas são:
-1) Qual a classificação de área mais comum?
-2) Qual a média de IPTU da área "Nobre"?
-3) Qual o total de IPTU da área "Média"?
-4) Supondo que o valor operacional para o recebimentos do IPTU seja nulo, quanto a autoridade fiscal receberia a mais se todas os imóveis fossem de classificação "Média"?		
-5) Quais são os valores máximos e mínimos de IPTU, Área e IPTU/M² e seus respectivos imóveis?			
+*Read this in another language: [Português](https://github.com/Eldov/Projects/blob/main/Project%201/README.pt-br.md)*
 
-### **Ferramentas** <br/>
-A proposta é de responder estas perguntas nas mais diversas plataformas para testar meus conhecimentos.
-Até o momento, pretendo responder pelos seguintes meios:
+### **Data/Table** <br/>
+The table includes data on 100 properties in a disregarded location. The attributes are:</br>
+Imoveis (Properties), IPTU (Brazilian Tax), Area - M², IPTU / M² and Classificações (Rating or Class). </br>
+The rating is made according to the IPTU value per M²  where:
+Rating will appear as "Nobre" (High) - with values of the IPTU / M² ratio greater than R$38.00, "Média" (Average) - with values between R$25.00 and R$38.00 e "Popular" (Low) when falling under R$25.00.
+
+### **Questions** <br/>
+The 5 proposed questions to be answered in the most varied ways are:
+1) What is the most common area rating?
+2) What is the average property tax in the "Nobre" area?
+3) What is the total property tax for the "Média" area?
+4) Assuming that the operational value for IPTU receipts is null, how much more would the tax authority receive if all properties were classified as "Média"?
+5) What are the maximum and minimum values of IPTU, Area and IPTU/M² and their respective properties?
+
+### **Tools** <br/>
+My goal is to answer these questions using different tools to test my knowledge.
+So far, I intend to answer by the following means:
 
 1) Excel;
 2) VBA;
 3) SQL;
 4) Python;
 5) Pandas;
-6) PowerBI<br/>
+6) PowerBI <br/>
 
-Assim, quero testar minhas habilidades mais basicas e clocar em prática/relembrar conteúdos aprendidos.
+Thus, I want to test my most basic skills and put into practice/remember previously learned content.
