@@ -1,0 +1,69 @@
+Public Function MODESTRING(Range As Range, Criteria1 As String, Criteria2 As String, Criteria3 As String)
+
+Dim Arg1 As Integer
+Arg1 = Application.WorksheetFunction.CountIf(Range, Criteria1)
+Dim Arg2 As Integer
+Arg2 = Application.WorksheetFunction.CountIf(Range, Criteria2)
+Dim Arg3 As Integer
+Arg3 = Application.WorksheetFunction.CountIf(Range, Criteria3)
+
+Dim Result As String
+
+If Arg1 > Arg2 Then
+Result = Criteria1
+ElseIf Arg1 < Arg2 And Arg2 > Arg3 Then
+Result = Criteria2
+Else
+Result = Criteria3
+End If
+
+MODESTRING = Result
+
+
+End Function
+
+Public Sub Ex2()
+
+Range("I" & 11) = Application.WorksheetFunction.AverageIf(Range("E2:E101"), Range("H" & 2), Range("B2:B101"))
+
+End Sub
+
+Public Sub Ex3()
+
+Range("I" & 13) = Application.WorksheetFunction.SumIf(Range("E2:E101"), Range("H" & 3), Range("B2:B101"))
+
+End Sub
+
+Public Sub Ex4()
+
+Dim Media As String
+Dim TotalMedia As Double
+Dim TotalIPTU As Double
+Media = Range("H" & 3)
+TotalMedia = Application.WorksheetFunction.AverageIf(Range("E2:E101"), Media, Range("B2:B101")) * Application.WorksheetFunction.Count(Range("C2:C101"))
+TotalIPTU = Application.WorksheetFunction.Sum(Range("B2:B101"))
+
+Range("I" & 18) = TotalMedia - TotalIPTU
+
+End Sub
+
+Public Sub Ex5()
+
+Range("J" & 22) = Application.WorksheetFunction.Max(Range("B2:B101"))
+Range("J" & 23) = Application.WorksheetFunction.Max(Range("C2:C101"))
+Range("J" & 24) = Application.WorksheetFunction.Max(Range("D2:D101"))
+
+Range("L" & 22) = Application.WorksheetFunction.Min(Range("B2:B101"))
+Range("L" & 23) = Application.WorksheetFunction.Min(Range("C2:C101"))
+Range("L" & 24) = Application.WorksheetFunction.Min(Range("D2:D101"))
+
+Range("K" & 22) = Application.WorksheetFunction.XLookup(Range("J" & 22), Range("B2:B101"), Range("A2:A101"))
+Range("K" & 23) = Application.WorksheetFunction.XLookup(Range("J" & 23), Range("C2:C101"), Range("A2:A101"))
+Range("K" & 24) = Application.WorksheetFunction.XLookup(Range("J" & 24), Range("D2:D101"), Range("A2:A101"))
+
+Range("M" & 22) = Application.WorksheetFunction.XLookup(Range("L" & 22), Range("B2:B101"), Range("A2:A101"))
+Range("M" & 23) = Application.WorksheetFunction.XLookup(Range("L" & 23), Range("C2:C101"), Range("A2:A101"))
+Range("M" & 24) = Application.WorksheetFunction.XLookup(Range("L" & 24), Range("D2:D101"), Range("A2:A101"))
+
+
+End Sub
