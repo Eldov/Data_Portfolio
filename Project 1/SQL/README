@@ -1,1 +1,21 @@
+(PT/BR)Nesta pasta do projeto, utilizei o MySQL para responder as 5 questões e os arquivos estão organizados das seguintes maneiras:
 
+1)Arquivo **Project 1 - SQL.txt**:
+Consta a base de dados em txt.
+
+2) Arquivo **Project 1 - SQL.csv**:
+Consta a base de dados em um arquivo csv.
+
+3) Arquivo **Project 1 - MySQL**:
+Script com todas as queries feitas para chegar as soluções.
+
+(EN)This folder shows the files where I used MySQL to answer the 5 proposed questions and the files are organized the following way:
+
+1) File **Project 1 - SQL.txt**:
+The database in txt.
+
+2) File **Project 1 - SQL.csv**:
+The database in a csv file.
+
+3) File **Project 1 - MySQL**:
+Has the script of every query used in order to get find the solutions.
