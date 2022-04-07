@@ -1,0 +1,134 @@
+CREATE DATABASE imoveis(
+id_imoveis INT AUTO_INCREMENT PRIMARY KEY,
+imoveis VARCHAR(255),
+IPTU FLOAT,
+area_m INT,
+IPTU_m FLOAT,
+classificacao VARCHAR(255)
+)
+
+SELECT *
+FROM imoveis;
+#Added the data to the new table using the csv file.
+
+#1) What is the most common area rating?
+SELECT classificacao, COUNT(classificacao) AS total
+FROM imoveis GROUP BY classificacao ORDER BY total DESC LIMIT 1;
+# Outcome: Media	48
+
+#2) What is the average property tax in the "Nobre" area?
+SELECT classificacao, AVG(IPTU) AS total
+FROM imoveis
+WHERE classificacao = 'Nobre';
+#Outcome: Nobre	8844
+
+#3) What is the total property tax for the "Média" area?
+SELECT classificacao, SUM(IPTU) AS total
+FROM imoveis
+WHERE classificacao = 'Media';
+#Outcome: Media	271925
+
+#4) Assuming that the operational value for IPTU receipts is null, how much more would the tax authority receive if all properties were classified as "Média"?
+CREATE TABLE avg_classificacao(
+id_avg INT AUTO_INCREMENT PRIMARY KEY,
+avg_class FLOAT,
+avg_total FLOAT
+);
+
+INSERT  INTO avg_classificacao VALUES
+(DEFAULT, 'Nobre',(SELECT AVG(IPTU)
+ FROM imoveis
+ WHERE classificacao = 'Nobre')),
+((DEFAULT, 'Media', (SELECT AVG(IPTU)
+ FROM imoveis
+WHERE classificacao = 'Media')),
+(DEFAULT, 'Popular',(SELECT AVG(IPTU)
+FROM imoveis
+WHERE classificacao = 'Popular')));
+
+SELECT *
+FROM avg_classificacao;
+#Outcome:
+# id_avg	avg_class	avg_total
+#1	Nobre	8844
+#2	Media	5665.1
+#3	Popular	1566.3
+
+SELECT classificacao, avg_total*COUNT(imoveis.imoveis)-SUM(IPTU) AS total
+FROM  avg_classificacao, imoveis
+WHERE avg_classificacao.avg_class = 'Media';
+#Outcome: Media	31195.400390625
+
+#5) What are the maximum and minimum values of IPTU, Area and IPTU/M² and their respective properties?
+CREATE TABLE max_values(
+id_values INT AUTO_INCREMENT PRIMARY KEY,
+attribute VARCHAR(255),
+max_total FLOAT,
+imovel VARCHAR(255)
+);
+CREATE TABLE min_values(
+id_values INT AUTO_INCREMENT PRIMARY KEY,
+attribute VARCHAR(255),
+min_total FLOAT,
+imovel VARCHAR(255)
+);
+
+INSERT INTO max_values VALUES
+(DEFAULT, 'IPTU',
+	(SELECT MAX(IPTU)
+    FROM imoveis), 
+	(SELECT imoveis
+	FROM imoveis
+	WHERE IPTU = (SELECT MAX(IPTU)
+    FROM imoveis))),
+(DEFAULT, 'area_m',
+	(SELECT MAX(area_m)
+    FROM imoveis),
+	(SELECT imoveis
+	FROM imoveis 
+	WHERE area_m = (SELECT MAX(area_m)
+		FROM imoveis)),
+(DEFAULT, 'IPTU_m',
+	(SELECT MAX(IPTU_m)
+    FROM imoveis),
+		(SELECT imoveis
+	FROM imoveis
+	WHERE IPTU_m = (SELECT MAX(IPTU_m)
+		FROM imoveis)))
+);
+SELECT * FROM max_values;
+#Outcome:
+# id_values	attribute	max_total	imovel
+#1	IPTU	9960	Imovel 005
+#2	area_m	249	Imovel 005
+#3	IPTU_m	40.85	Imovel 050
+
+INSERT INTO min_values VALUES
+(DEFAULT, 'IPTU',
+	(SELECT MIN(IPTU)
+    FROM imoveis), 
+	(SELECT imoveis
+	FROM imoveis
+	WHERE IPTU = (SELECT MIN(IPTU)
+    FROM imoveis))),
+(DEFAULT, 'area_m',
+	(SELECT MIN(area_m)
+    FROM imoveis),
+	(SELECT imoveis
+	FROM imoveis 
+	WHERE area_m = (SELECT MIN(area_m)
+		FROM imoveis))),
+(DEFAULT, 'IPTU_m',
+	(SELECT MIN(IPTU_m)
+    FROM imoveis),
+		(SELECT imoveis
+	FROM imoveis
+	WHERE IPTU_m = (SELECT MIN(IPTU_m)
+		FROM imoveis)));
+
+SELECT * FROM min_values;
+#Outcome:
+# id_values	attribute	min_total	imovel
+#1	IPTU	375	Imovel 052
+#2	area_m	61	Imovel 052
+#3	IPTU_m	6.15	Imovel 052
