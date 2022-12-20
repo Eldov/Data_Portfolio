@@ -1,0 +1,203 @@
+from emr_config import EMR_CONFIG # File configuring EMR clusters
+
+from airflow import DAG
+from airflow.utils.dates import days_ago
+
+from airflow.operators.dummy import DummyOperator
+
+from airflow.contrib.operators.emr_create_job_flow_operator import EmrCreateJobFlowOperator # Creates the cluster
+from airflow.providers.amazon.aws.sensors.emr import EmrJobFlowSensor # Observes and only goes ahead if the cluster was successfully created
+from airflow.contrib.operators.emr_add_steps_operator import EmrAddStepsOperator # Runs the script
+from airflow.providers.amazon.aws.sensors.emr_step import EmrStepSensor # Observes and only goes ahead if the script was successfully ran
+from airflow.contrib.operators.emr_terminate_job_flow_operator import EmrTerminateJobFlowOperator # Shut the cluster down
+
+from airflow.providers.amazon.aws.operators.glue_crawler import GlueCrawlerOperator # Runs glue crawler
+
+from airflow.providers.amazon.aws.operators.athena import AthenaOperator # Runs Athena queries
+
+default_args = {
+    'owner': 'Emili Veiga',
+    'depends_on_past': False,
+    'email': ['dag@email.com'],
+    'email_on_failure': True,
+    'email_on_retry': False,
+    'retries': 2,
+    'retry_delay': timedelta(minutes=1)
+}
+
+with DAG(
+    dag_id="emili-veiga-etl-aws",
+    tags=['etl', 'aws', 'dataengineer'],
+    default_args=default_args,
+    start_date=days_ago(1),
+    schedule_interval='@daily',
+    concurrency=3,
+    max_active_runs=1,
+    catchup=False
+) as dag:
+
+# DUMMY TASK 
+
+    task_dummy = DummyOperator(
+        task_id='task_dummy'
+    )
+
+# CREATES THE CLUSTER AND OBSERVES ITS CREATION 
+
+    create_emr_cluster = EmrCreateJobFlowOperator(
+        task_id="create_emr_cluster",
+        job_flow_overrides=EMR_CONFIG,
+        aws_conn_id="aws",
+        emr_conn_id="emr",
+        region_name='us-east-1'
+    )
+
+    emr_create_sensor = EmrJobFlowSensor(
+        task_id='monitoring_emr_cluster_creation',
+        job_flow_id="{{ task_instance.xcom_pull(task_ids='create_emr_cluster', key='return_value') }}",
+        target_states=['WAITING'],
+        failed_states=['TERMINATED', 'TERMINATED_WITH_ERRORS'],
+        aws_conn_id="aws"
+    )
+
+# RUNS THE FIRST SCRIPT AND OBSERVES ITS STATUS
+
+    steps_landing_to_processing = [{
+        "Name": "LANDING_TO_PROCESSING",
+        "ActionOnFailure": "CANCEL_AND_WAIT",
+        "HadoopJarStep": {
+            "Jar": "command-runner.jar",
+             "Args": [
+                'spark-submit',
+                's3://emr-tf-data-codes/landing_to_processing.py'
+             ]
+        }
+    }] 
+
+    task_landing_to_processing = EmrAddStepsOperator(
+        task_id='task_landing_to_processing',
+        job_flow_id="{{ task_instance.xcom_pull(task_ids='create_emr_cluster', key='return_value') }}",
+        steps=steps_landing_to_processing,
+        aws_conn_id='aws',
+        dag=dag
+    )
+
+    step_checker_landing_to_processing = EmrStepSensor(
+        task_id=f'watch_task_landing_to_processing',
+        job_flow_id="{{ task_instance.xcom_pull(task_ids='create_emr_cluster', key='return_value') }}",
+        step_id="{{ task_instance.xcom_pull(task_ids='task_landing_to_processing', key='return_value')[0] }}",
+        target_states=['COMPLETED'],
+        failed_states=['CANCELLED', 'FAILED', 'INTERRUPTED'],
+        aws_conn_id="aws",
+        dag=dag
+    )
+
+# ADDING AN EXTRA STEP JUST IN CASE
+
+    steps_processing_to_curated = [{
+        "Name": "PROCESSING_TO_CURATED",
+        "ActionOnFailure": "CANCEL_AND_WAIT",
+        "HadoopJarStep": {
+            "Jar": "command-runner.jar",
+             "Args": [
+                'spark-submit',
+                's3://emr-tf-data-codes/processing_to_curated.py'
+             ]
+        }
+    }]    
+
+
+    task_processing_to_curated = EmrAddStepsOperator(
+        task_id='task_processing_to_curated',
+        job_flow_id="{{ task_instance.xcom_pull(task_ids='create_emr_cluster', key='return_value') }}",
+        steps=steps_processing_to_curated,
+        aws_conn_id='aws',
+        dag=dag
+    )
+
+    step_checker_processing_to_curated = EmrStepSensor(
+        task_id=f'watch_task_processing_to_curated',
+        job_flow_id="{{ task_instance.xcom_pull(task_ids='create_emr_cluster', key='return_value') }}",
+        step_id="{{ task_instance.xcom_pull(task_ids='task_processing_to_curated', key='return_value')[0] }}",
+        target_states=['COMPLETED'],
+        failed_states=['CANCELLED', 'FAILED', 'INTERRUPTED'],
+        aws_conn_id="aws",
+        dag=dag
+    )
+
+# DESTROYING THE CLUSTER
+
+    terminate_emr_cluster = EmrTerminateJobFlowOperator(
+        task_id='terminate_emr_cluster',
+        job_flow_id="{{ task_instance.xcom_pull(task_ids='create_emr_cluster', key='return_value') }}",
+        trigger_rule="all_done",
+        aws_conn_id="aws"
+    )
+
+# RUNS THE CRAWLER AND OBSERVES THE STATUS
+
+    glue_crawler = GlueCrawlerOperator(
+        task_id='glue_crawler_curated',
+        config={"Name": "crawler_etl_data"},
+        aws_conn_id='aws',
+        poll_interval=10
+    )
+
+# RUNNING ATHENA QUERIES (ADDING AN ATHENA SENSOR MAY BE INTERESTING)
+
+
+    task_mean_table2_athena = AthenaOperator(
+        task_id='query_mean_table2_athena',
+        query="""
+            create table if not exists table2 as 
+            select 
+                col1,
+                avg(col2) as mean_col2
+            from 
+                table1
+            group by 
+                col1
+            order by
+                mean_col2 desc
+        """,
+        database='database_etl_data',
+        output_location='s3://athena-tf-data/',
+        aws_conn_id='aws'
+    )
+
+
+    task_total_table3_athena = AthenaOperator(
+        task_id='query_total_table3_athena',
+        query="""
+            create table if not exists table3 as 
+            select 
+                    col3,
+                    sum(col2) as total_col2
+            from 
+                    table1
+            group by
+                    col3
+            order by
+                total_col2 desc
+        """,
+        database='database_etl_data',
+        output_location='s3://athena-tf-data/',
+        aws_conn_id='aws'
+    )
+    
+
+
+# TASKS SEQUENCE 
+
+    (
+        create_emr_cluster >> emr_create_sensor >>
+
+        task_landing_to_processing >> step_checker_landing_to_processing >>
+        
+        task_processing_to_curated >> step_checker_processing_to_curated >>
+
+        [terminate_emr_cluster, glue_crawler] >> task_dummy >>
+
+        [task_mean_table2_athena, task_total_table3_athena]
+
+    )
