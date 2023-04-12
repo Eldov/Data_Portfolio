@@ -1,4 +1,4 @@
-Starting Project 3, a little bit simpler.
+Starting Project 3, a little bit simpler.  
 The Cloud to be used will be AWS and IaC Terraform;  
 As Data Source, I will create a database in Amazon RDS (Relational Database Service) where we will have a table to ingest from;  
 I will use AWS DMS (Database Migration Service) to ingest from our RDS;  
