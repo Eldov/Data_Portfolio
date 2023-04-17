@@ -8,6 +8,6 @@ db_port = 3306
 vpc_group_name = "vpc-group-name-dms"
 vpc_group_description = "Allow access to environment"
 vpc_id = ["........."]
-subnet_id = "........."
+subnet_id = [".........", "........."]
 security_group_id_list = ["........."]
 athena_database_name = "sales"

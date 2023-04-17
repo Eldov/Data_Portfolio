@@ -30,7 +30,7 @@ variable "vpc_group_description" {
 }
 
 variable "subnet_id" {
-    type = string
+    type = list(string)
 }
 
 variable "vpc_id" {
