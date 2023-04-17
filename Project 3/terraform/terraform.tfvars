@@ -1,0 +1,13 @@
+project_name = "project3"
+environment = "prod"
+bucket_names = ["raw","processed","curated","scripts"]
+db_username = "postgres"
+db_password = "......."
+key_pair_name = "key-project3"
+db_port = 3306
+vpc_group_name = "vpc-group-name-dms"
+vpc_group_description = "Allow access to environment"
+vpc_id = ["........."]
+subnet_id = "........."
+security_group_id_list = ["........."]
+athena_database_name = "sales"
