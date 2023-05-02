@@ -1,4 +1,4 @@
-### **The Project 3** <br/> 
+## **The Project 3** <br/> 
 This project has the goal of creating a data pipeline. </br>
 
 
@@ -35,7 +35,7 @@ In case you are using Windows and facing problems activating the venv, make sure
 
 
 ### **The Terraform** <br/>
-We will use Terraform to set all of our infraestructure. From every single bucket to each crawler we may use.  
+We will use Terraform to set all of our infrastructure. From every single bucket to each crawler we may use.  
 But! To be able to do that we need to install Terraform itself.  
 First, we have to install the aws-cli app:  
 You can find the download link in here https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html  
