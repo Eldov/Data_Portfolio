@@ -1,0 +1,20 @@
+WITH weekly_orders AS
+(SELECT 
+    DATE_TRUNC('week', o.ORDER_PURCHASE_TIMESTAMP) AS week,
+    ARRAY_AGG(DISTINCT oi.SELLER_ID) AS seller,
+    COUNT(DISTINCT oi.seller_id) AS seller_count
+FROM 
+    "TAKE_HOME_CHALLENGE"."ECOMMERCE"."ORDER_ITEMS" oi
+JOIN 
+    "TAKE_HOME_CHALLENGE"."ECOMMERCE"."ORDERS" o ON oi.ORDER_ID = o.ORDER_ID
+WHERE 
+    YEAR(o.ORDER_PURCHASE_TIMESTAMP) = 2017
+GROUP BY 
+    week
+HAVING 
+    COUNT(DISTINCT oi.ORDER_ID) >= 5
+ORDER BY week)
+SELECT DATE_TRUNC('month', week) AS month,
+ROUND(AVG(seller_count)) AS avg
+FROM weekly_orders
+GROUP BY DATE_TRUNC('month', week);

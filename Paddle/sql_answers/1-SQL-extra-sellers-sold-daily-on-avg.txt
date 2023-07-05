@@ -1,0 +1,43 @@
+//Something's off... I am getting the same values of 'Monthly Active Sellers'.
+//They should indeed be similar numbers but what I am getting is that no one made, in a month, more than 25 sales and less than the total days on that very month.
+//It also indicates that everyone that sold more than 25 times in a month, did so at least daily. That is unlikely.
+//These are the numbers, monthly, of sellers, that sold, in average, once per day every month.
+//A solution could be create a new table/view/subquery with all the days in the year of 2017,
+//join with the orders to create days with 0 orders. The days would remove the seller. Tried creating suck but failed. This was the best I could get.
+WITH orders_per_day
+AS (
+	SELECT oi.SELLER_ID AS SELLER
+		,DATE_TRUNC('day', o.ORDER_PURCHASE_TIMESTAMP) AS ORDER_DAY
+		,COUNT(DISTINCT o.ORDER_ID) AS NUM_ORDERS
+	FROM "TAKE_HOME_CHALLENGE"."ECOMMERCE"."ORDER_ITEMS" oi
+	JOIN "TAKE_HOME_CHALLENGE"."ECOMMERCE"."ORDERS" o ON oi.ORDER_ID = o.ORDER_ID
+	WHERE o.ORDER_PURCHASE_TIMESTAMP >= '2017-01-01'
+		AND o.ORDER_PURCHASE_TIMESTAMP < '2018-01-01'
+	GROUP BY SELLER
+		,ORDER_DAY
+	ORDER BY SELLER
+		,ORDER_DAY
+		,NUM_ORDERS ASC
+	)
+	,orders_per_month
+AS (
+	SELECT SELLER
+		,DATE_TRUNC('month', ORDER_DAY) AS ORDER_MONTH
+		,SUM(NUM_ORDERS) AS NUM_ORDERS_PER_MONTH
+		,COUNT(DISTINCT ORDER_DAY) AS NUM_DAYS_PER_MONTH
+	FROM orders_per_day
+	GROUP BY SELLER
+		,ORDER_MONTH
+	)
+	,sellers_per_month
+AS (
+	SELECT ORDER_MONTH
+		,COUNT(DISTINCT SELLER) AS NUM_SELLERS_PER_MONTH
+	FROM orders_per_month
+	WHERE NUM_ORDERS_PER_MONTH >= NUM_DAYS_PER_MONTH
+		AND EXTRACT(YEAR FROM ORDER_MONTH) = 2017
+	GROUP BY ORDER_MONTH
+	)
+SELECT *
+FROM sellers_per_month
+ORDER BY ORDER_MONTH;
